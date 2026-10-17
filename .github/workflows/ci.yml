@@ -1,0 +1,35 @@
+name: Validate Catalog
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Validate catalog and recipe TOML
+        run: python3 scripts/checks.py
+      - name: Test maintenance checks
+        run: python3 -m unittest discover -s tests -v
+      - name: Check generated README
+        run: python3 scripts/readme.py --check
+      - name: Check whitespace
+        run: git diff --check

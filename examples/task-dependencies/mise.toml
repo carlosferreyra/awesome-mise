@@ -1,0 +1,8 @@
+[tasks.prepare]
+description = "Prepare the report"
+run = 'printf "%s\n" "Preparing report"'
+
+[tasks.report]
+description = "Print the report after preparation"
+depends = ["prepare"]
+run = 'printf "%s\n" "Report ready"'

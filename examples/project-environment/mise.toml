@@ -1,0 +1,6 @@
+[env]
+PROJECT_GREETING = "Hello from mise"
+
+[tasks.hello]
+description = "Print the project greeting"
+run = 'printf "%s\n" "$PROJECT_GREETING"'

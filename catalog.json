@@ -1,0 +1,67 @@
+{
+  "categories": [
+    {
+      "name": "Choose project tools",
+      "slug": "choose-project-tools",
+      "entries": [
+        {
+          "name": "Python",
+          "type": "tool",
+          "description": "Select a Python version per project; useful when scripts and applications need different runtimes.",
+          "url": "https://mise.jdx.dev/lang/python.html",
+          "notes": "Registry key: python. Example: mise use python@3.13 (writes project configuration and may install Python). Platform availability depends on the selected version and backend."
+        }
+      ]
+    },
+    {
+      "name": "Automate everyday work",
+      "slug": "automate-everyday-work",
+      "entries": [
+        {
+          "name": "Project environment",
+          "type": "recipe",
+          "description": "Give project commands a shared environment variable without changing the shell globally.",
+          "url": "https://mise.jdx.dev/configuration.html",
+          "config": "examples/project-environment/mise.toml",
+          "usage": "mise run hello",
+          "notes": "Requires mise and a POSIX shell. No additional tools or secrets are needed."
+        },
+        {
+          "name": "Task dependencies",
+          "type": "recipe",
+          "description": "Run a preparation task before a report task; replace the small commands with your own workflow.",
+          "url": "https://mise.jdx.dev/tasks/toml-tasks.html",
+          "config": "examples/task-dependencies/mise.toml",
+          "usage": "mise run report",
+          "notes": "Requires mise and a POSIX shell. The preparation message runs before the report message."
+        }
+      ]
+    },
+    {
+      "name": "Connect your workflow",
+      "slug": "connect-your-workflow",
+      "entries": [
+        {
+          "name": "mise-action",
+          "type": "integration",
+          "description": "Use project tool versions in GitHub Actions with the official mise setup action.",
+          "url": "https://github.com/jdx/mise-action",
+          "notes": "Follow upstream usage and runner requirements; this is an integration, not a tool to install through mise."
+        }
+      ]
+    },
+    {
+      "name": "Learn and explore",
+      "slug": "learn-and-explore",
+      "entries": [
+        {
+          "name": "Getting started",
+          "type": "learning",
+          "description": "Install mise, configure your shell, and learn the basic project workflow.",
+          "url": "https://mise.jdx.dev/getting-started.html",
+          "notes": "Official guide; use the registry for the complete tool inventory."
+        }
+      ]
+    }
+  ]
+}
