@@ -16,14 +16,27 @@ and practical context. It is intentionally selective. Tools are installable thro
 integrations connect mise to other systems; recipes are reusable configurations; learning
 resources explain how to put them to work. These labels describe the resource, not a verification level.
 
+## Start here
+
+Use the official [getting started guide](https://mise.jdx.dev/getting-started.html),
+[shell setup](https://mise.jdx.dev/shell-setup.html), and
+[tool registry](https://mise.jdx.dev/registry.html) for installation and reference.
+Browse the categories below for selected tools, workflows, and configurations worth exploring.
+
 ## Try a recipe
 
 Install mise using the [official instructions](https://mise.jdx.dev/installing-mise.html).
 Copy a recipe's `mise.toml` into a new directory, inspect it, then run its listed command there.
 If mise requests trust, review the file before running `mise trust`. Merge deliberately when
-adapting a recipe to an existing project. The initial recipes use POSIX shell commands and need
-no tool installations. They are small building blocks; community configurations should explain
-their prerequisites and provenance.
+adapting a recipe to an existing project. The included recipes use an existing Python 3.11+
+installation available as `python3`; no tools are installed by their configurations. Read each
+entry's input requirements and output paths before running it. Generated reports and archives
+replace earlier output at those paths. See [sample inputs and verification notes](examples/README.md)
+for commands to try each recipe in a scratch directory.
+
+Real-world configurations are linked case studies, identified as learning resources. Their
+notes point to the useful patterns and project-specific dependencies. They are separate from
+the self-contained recipes maintained here.
 
 ## Contents
 

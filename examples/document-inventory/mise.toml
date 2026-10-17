@@ -1,0 +1,27 @@
+[env]
+INVENTORY_INPUT = "documents"
+INVENTORY_OUTPUT = "build/inventory.csv"
+
+[tasks.inventory]
+description = "Write a CSV inventory of document paths and sizes"
+run = """
+python3 - <<'PY'
+import csv
+import os
+from pathlib import Path
+
+source = Path(os.environ["INVENTORY_INPUT"])
+if not source.is_dir():
+    raise SystemExit("Create the documents/ input directory first")
+destination = Path(os.environ["INVENTORY_OUTPUT"])
+rows = [(str(path.relative_to(source)), path.stat().st_size)
+        for path in sorted(source.rglob("*"))
+        if path.is_file() and not path.is_symlink()]
+destination.parent.mkdir(parents=True, exist_ok=True)
+with destination.open("w", newline="", encoding="utf-8") as output:
+    writer = csv.writer(output)
+    writer.writerow(["path", "bytes"])
+    writer.writerows(rows)
+print(f"Wrote {len(rows)} records to {destination}")
+PY
+"""

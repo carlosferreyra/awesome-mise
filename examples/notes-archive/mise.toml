@@ -1,0 +1,16 @@
+[tasks.archive]
+description = "Create a compressed archive of notes/"
+run = """
+python3 - <<'PY'
+from pathlib import Path
+import tarfile
+
+source = Path("notes")
+if not source.is_dir():
+    raise SystemExit("Create the notes/ input directory first")
+Path("build").mkdir(exist_ok=True)
+with tarfile.open("build/notes.tar.gz", "w:gz") as archive:
+    archive.add(source, arcname="notes")
+print("Wrote build/notes.tar.gz")
+PY
+"""

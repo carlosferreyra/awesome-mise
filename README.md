@@ -16,76 +16,151 @@ and practical context. It is intentionally selective. Tools are installable thro
 integrations connect mise to other systems; recipes are reusable configurations; learning
 resources explain how to put them to work. These labels describe the resource, not a verification level.
 
+## Start here
+
+Use the official [getting started guide](https://mise.jdx.dev/getting-started.html),
+[shell setup](https://mise.jdx.dev/shell-setup.html), and
+[tool registry](https://mise.jdx.dev/registry.html) for installation and reference.
+Browse the categories below for selected tools, workflows, and configurations worth exploring.
+
 ## Try a recipe
 
 Install mise using the [official instructions](https://mise.jdx.dev/installing-mise.html).
 Copy a recipe's `mise.toml` into a new directory, inspect it, then run its listed command there.
 If mise requests trust, review the file before running `mise trust`. Merge deliberately when
-adapting a recipe to an existing project. The initial recipes use POSIX shell commands and need
-no tool installations. They are small building blocks; community configurations should explain
-their prerequisites and provenance.
+adapting a recipe to an existing project. The included recipes use an existing Python 3.11+
+installation available as `python3`; no tools are installed by their configurations. Read each
+entry's input requirements and output paths before running it. Generated reports and archives
+replace earlier output at those paths. See [sample inputs and verification notes](examples/README.md)
+for commands to try each recipe in a scratch directory.
+
+Real-world configurations are linked case studies, identified as learning resources. Their
+notes point to the useful patterns and project-specific dependencies. They are separate from
+the self-contained recipes maintained here.
 
 ## Contents
 
-- [Choose project tools](#choose-project-tools)
-- [Automate everyday work](#automate-everyday-work)
-- [Connect your workflow](#connect-your-workflow)
-- [Learn and explore](#learn-and-explore)
+- [Tools worth discovering](#choose-project-tools)
+- [Project environments](#project-environments)
+- [Tasks & automation](#automate-everyday-work)
+- [Integrations](#connect-your-workflow)
+- [Real-world configurations](#real-world-configurations)
+- [Guides & learning](#learn-and-explore)
 
 <a id="choose-project-tools"></a>
 
-## Choose project tools
+## Tools worth discovering
 
-### [Python](https://mise.jdx.dev/lang/python.html)
+### [jq](https://jqlang.org/manual/)
 
-**Tool** — Select a Python version per project; useful when scripts and applications need different runtimes.
+**Tool** — Turn JSON exports and API responses into filtered records, aggregates, or input for another command.
 
-Registry key: python. Example: mise use python@3.13 (writes project configuration and may install Python). Platform availability depends on the selected version and backend.
+Registry key: `jq` (aqua backend available). Declare `jq = "1.8"` under `[tools]` to share a version across local tasks and CI. Useful for repeatable data-processing tasks without a custom application.
 
-<a id="automate-everyday-work"></a>
+### [Pandoc](https://pandoc.org/)
 
-## Automate everyday work
+**Tool** — Convert documents between formats and build repeatable publishing workflows from source files.
 
-### [Project environment](https://mise.jdx.dev/configuration.html)
+Registry key: `pandoc` (GitHub backend available). Pair a project version with mise tasks for document exports. Some output formats require additional software; PDF output may need a separate PDF engine.
 
-**Recipe** — Give project commands a shared environment variable without changing the shell globally.
+### [Rclone](https://rclone.org/)
 
-Requires mise and a POSIX shell. No additional tools or secrets are needed.
+**Tool** — Copy, inspect, and synchronize files across local storage and cloud providers.
 
-Copy [`examples/project-environment/mise.toml`](examples/project-environment/mise.toml) as `mise.toml`:
+Registry key: `rclone` (aqua backend available). Useful in named transfer or backup tasks. Remotes need separate configuration and credentials; inspect a dry run before adopting operations that can delete destination files.
+
+### [yq](https://mikefarah.gitbook.io/yq)
+
+**Tool** — Query and transform YAML configuration, including conversion between structured data formats.
+
+Registry key: `yq`; choose the Mike Farah implementation, such as `aqua:mikefarah/yq`. Pin it in a project so configuration-editing tasks use the same CLI; unrelated tools also use the name yq.
+
+<a id="project-environments"></a>
+
+## Project environments
+
+### [Document inventory](https://mise.jdx.dev/configuration.html)
+
+**Recipe** — Create a CSV of relative file paths and byte sizes, with input and output locations set by the project environment.
+
+Requires Python 3.11+ as `python3` and an existing `documents/` directory. Creates or replaces `build/inventory.csv`; excludes directories and symbolic links. For a quick trial, create `documents/hello.txt` containing `hello` followed by a newline: its row is `hello.txt,6`. Paths are relative to documents/.
+
+Copy [`examples/document-inventory/mise.toml`](examples/document-inventory/mise.toml) as `mise.toml`:
 
 ```toml
 [env]
-PROJECT_GREETING = "Hello from mise"
+INVENTORY_INPUT = "documents"
+INVENTORY_OUTPUT = "build/inventory.csv"
 
-[tasks.hello]
-description = "Print the project greeting"
-run = 'printf "%s\n" "$PROJECT_GREETING"'
+[tasks.inventory]
+description = "Write a CSV inventory of document paths and sizes"
+run = """
+python3 - <<'PY'
+import csv
+import os
+from pathlib import Path
+
+source = Path(os.environ["INVENTORY_INPUT"])
+if not source.is_dir():
+    raise SystemExit("Create the documents/ input directory first")
+destination = Path(os.environ["INVENTORY_OUTPUT"])
+rows = [(str(path.relative_to(source)), path.stat().st_size)
+        for path in sorted(source.rglob("*"))
+        if path.is_file() and not path.is_symlink()]
+destination.parent.mkdir(parents=True, exist_ok=True)
+with destination.open("w", newline="", encoding="utf-8") as output:
+    writer = csv.writer(output)
+    writer.writerow(["path", "bytes"])
+    writer.writerows(rows)
+print(f"Wrote {len(rows)} records to {destination}")
+PY
+"""
 ```
 
 Run from that directory:
 
 ```sh
-mise run hello
+mise run inventory
 ```
 
-### [Task dependencies](https://mise.jdx.dev/tasks/toml-tasks.html)
+<a id="automate-everyday-work"></a>
 
-**Recipe** — Run a preparation task before a report task; replace the small commands with your own workflow.
+## Tasks & automation
 
-Requires mise and a POSIX shell. The preparation message runs before the report message.
+### [CSV category totals](https://mise.jdx.dev/tasks/toml-tasks.html)
 
-Copy [`examples/task-dependencies/mise.toml`](examples/task-dependencies/mise.toml) as `mise.toml`:
+**Recipe** — Summarize a CSV by category into a JSON report, with a preparation task creating the output directory.
+
+Requires a POSIX shell and Python 3.11+ as `python3` and `input.csv` with `category,amount` headers and integer amounts. Creates or replaces `build/totals.json`. Rows `books,12`, `food,8`, and `books,3` produce totals books=15 and food=8. Task dependencies keep output preparation ahead of report generation.
+
+Copy [`examples/csv-category-totals/mise.toml`](examples/csv-category-totals/mise.toml) as `mise.toml`:
 
 ```toml
 [tasks.prepare]
-description = "Prepare the report"
-run = 'printf "%s\n" "Preparing report"'
+description = "Create the report output directory"
+run = "mkdir -p build"
 
 [tasks.report]
-description = "Print the report after preparation"
+description = "Sum integer amounts by category into JSON"
 depends = ["prepare"]
-run = 'printf "%s\n" "Report ready"'
+run = """
+python3 - <<'PY'
+import csv
+import json
+from collections import defaultdict
+from pathlib import Path
+
+totals = defaultdict(int)
+with Path("input.csv").open(newline="", encoding="utf-8") as source:
+    for row in csv.DictReader(source):
+        totals[row["category"]] += int(row["amount"])
+Path("build/totals.json").write_text(
+    json.dumps(dict(totals), indent=2, sort_keys=True) + chr(10),
+    encoding="utf-8",
+)
+print("Wrote build/totals.json")
+PY
+"""
 ```
 
 Run from that directory:
@@ -94,25 +169,92 @@ Run from that directory:
 mise run report
 ```
 
+### [Portable notes archive](https://mise.jdx.dev/tasks/toml-tasks.html)
+
+**Recipe** — Package a notes directory into a gzip-compressed tar archive using a named task.
+
+Requires Python 3.11+ as `python3` and an existing `notes/` directory. Creates or replaces `build/notes.tar.gz`; includes the notes directory and its contents. For a trial, add notes/hello.txt and inspect the resulting archive with `python3 -m tarfile -l build/notes.tar.gz`. Archive creation is not a complete backup strategy.
+
+Copy [`examples/notes-archive/mise.toml`](examples/notes-archive/mise.toml) as `mise.toml`:
+
+```toml
+[tasks.archive]
+description = "Create a compressed archive of notes/"
+run = """
+python3 - <<'PY'
+from pathlib import Path
+import tarfile
+
+source = Path("notes")
+if not source.is_dir():
+    raise SystemExit("Create the notes/ input directory first")
+Path("build").mkdir(exist_ok=True)
+with tarfile.open("build/notes.tar.gz", "w:gz") as archive:
+    archive.add(source, arcname="notes")
+print("Wrote build/notes.tar.gz")
+PY
+"""
+```
+
+Run from that directory:
+
+```sh
+mise run archive
+```
+
 <a id="connect-your-workflow"></a>
 
-## Connect your workflow
+## Integrations
+
+### [intellij-mise](https://github.com/134130/intellij-mise)
+
+**Integration** — Connect mise-managed SDKs and tasks to JetBrains IDEs.
+
+Community plugin for the IntelliJ platform. Review upstream IDE compatibility and SDK support; useful when an IDE and an interactive terminal select different runtimes.
 
 ### [mise-action](https://github.com/jdx/mise-action)
 
-**Integration** — Use project tool versions in GitHub Actions with the official mise setup action.
+**Integration** — Install project tools in GitHub Actions so CI can use the same mise configuration as contributors.
 
-Follow upstream usage and runner requirements; this is an integration, not a tool to install through mise.
+Official action with installation and caching options. Follow upstream examples for action versions and runner requirements; declare project tools in mise configuration rather than duplicating version choices in workflow steps.
+
+### [mise-vscode](https://github.com/hverlin/mise-vscode)
+
+**Integration** — Discover and run project tasks, manage tools, and work with the mise environment from VS Code.
+
+Community extension. Inspect its environment and supported language-extension settings; automatic configuration of other extensions is optional. Remote development needs mise on the machine running the extension.
+
+<a id="real-world-configurations"></a>
+
+## Real-world configurations
+
+### [mise development workflow](https://github.com/jdx/mise/blob/main/mise.toml)
+
+**Learning** — Study how mise itself combines a toolchain, separate task files, documentation generation, and build/test orchestration.
+
+Configuration case study. Start with `[task_config].includes`, then read [tasks.toml](https://github.com/jdx/mise/blob/main/tasks.toml) for the `ci` dependency graph and `render:*` tasks. Commands depend on the mise source tree and development tools; use individual patterns rather than running the configuration in an unrelated project.
+
+### [mise-action maintenance workflow](https://github.com/jdx/mise-action/blob/main/mise.toml)
+
+**Learning** — See a JavaScript GitHub Action use mise for linting, testing, versioning, and release tasks.
+
+Configuration case study. Inspect the concise `tasks.*` declarations and `[tools]`, then follow referenced scripts in the repository. Its pre-commit task stages generated files with git add; review side effects before adapting it. This is the action project development setup, separate from installing the action in your own CI.
 
 <a id="learn-and-explore"></a>
 
-## Learn and explore
+## Guides & learning
 
-### [Getting started](https://mise.jdx.dev/getting-started.html)
+### [Python environments and uv scripts](https://mise.jdx.dev/mise-cookbook/python.html)
 
-**Learning** — Install mise, configure your shell, and learn the basic project workflow.
+**Learning** — Choose between a requirements-based virtualenv, a uv project, and scripts with inline dependencies.
 
-Official guide; use the registry for the complete tool inventory.
+Official walkthrough with complete configurations and expected project files. Particularly useful for deciding which component owns Python versions, virtualenv creation, and dependency installation.
+
+### [Terraform and OpenTofu workflows](https://mise.jdx.dev/mise-cookbook/terraform.html)
+
+**Learning** — Wrap infrastructure initialization, validation, planning, and application in project tasks.
+
+Official walkthrough showing subdirectory commands and dependency ordering. Initialization can download providers and change a lockfile; apply and destroy change infrastructure and require separate care and credentials.
 
 ## Contributing
 

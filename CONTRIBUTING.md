@@ -5,6 +5,27 @@ clear use case over a long list of registry entries. Tools, integrations, reusab
 learning resources, and real-world configurations all belong here when they help readers do
 something with mise. Use an existing outcome-based category where possible.
 
+## What earns a place
+
+Every entry should explain what makes it worth discovering and why mise is useful in that
+context. Installation through mise alone is insufficient. Prefer practical depth and original
+sources over a registry mirror or a collection of introductory documentation links.
+
+- Tools: describe a distinctive capability and a realistic use in a mise workflow.
+- Recipes: solve a concrete problem and produce an observable result. Include input requirements,
+  commands, output locations, overwrite behavior, and expected results in the entry notes.
+- Integrations: explain the connection to mise and link the upstream project and compatibility information.
+- Real-world configurations: use `learning` for linked case studies. Point to specific files and
+  patterns; explain project dependencies and side effects. Using mise alone does not merit inclusion.
+- Guides: select for depth, clarity, or a particularly useful application. Basic official setup
+  links belong in Start here rather than as standalone catalog entries.
+
+Organize entries by their main use: tools worth discovering, project environments, tasks and
+automation, integrations, real-world configurations, or guides and learning. Machine setup and
+dotfiles are also in scope; introduce that category when a worthwhile verified entry is ready.
+Publish categories with useful entries, and avoid quotas or empty placeholders. Resource type
+and category serve different purposes: a task workflow may feature a tool, recipe, or guide.
+
 ## Catalog format
 
 `catalog.json` is the canonical resource index. Each category has a `name`, a stable lowercase

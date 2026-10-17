@@ -1,0 +1,25 @@
+[tasks.prepare]
+description = "Create the report output directory"
+run = "mkdir -p build"
+
+[tasks.report]
+description = "Sum integer amounts by category into JSON"
+depends = ["prepare"]
+run = """
+python3 - <<'PY'
+import csv
+import json
+from collections import defaultdict
+from pathlib import Path
+
+totals = defaultdict(int)
+with Path("input.csv").open(newline="", encoding="utf-8") as source:
+    for row in csv.DictReader(source):
+        totals[row["category"]] += int(row["amount"])
+Path("build/totals.json").write_text(
+    json.dumps(dict(totals), indent=2, sort_keys=True) + chr(10),
+    encoding="utf-8",
+)
+print("Wrote build/totals.json")
+PY
+"""
