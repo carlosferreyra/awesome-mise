@@ -6,6 +6,7 @@ Discover what is possible with [mise](https://mise.jdx.dev/): a curated collecti
 ## Contents
 
 - [Official Resources](#official-resources)
+- [Installing Tools](#installing-tools)
 - [Integrations](#connect-your-workflow)
 - [Tools](#choose-project-tools)
 - [Workflows & Recipes](#automate-everyday-work)
@@ -17,6 +18,18 @@ Discover what is possible with [mise](https://mise.jdx.dev/): a curated collecti
 - [Documentation](https://mise.jdx.dev/) - Official guides and reference for tools, environments, and tasks.
 - [Getting Started](https://mise.jdx.dev/getting-started.html) - Installation and the first steps with a project configuration.
 - [Registry](https://mise.jdx.dev/registry.html) - Supported tool identifiers and installation backends.
+
+## Installing Tools
+
+Use `mise use backend:package@version` to install a CLI through a built-in backend and record it in project configuration. Run these examples from your project directory; add `-g` for global defaults. Use `mise exec -- <command>` to run an installed tool without shell activation.
+
+| Backend | Project installation example | Discover packages |
+| :--- | :--- | :--- |
+| [npm](https://mise.jdx.dev/dev-tools/backends/npm.html) | `mise use node@24 npm:prettier@3` | [Awesome BUNX](https://github.com/carlosferreyra/awesome-bunx) |
+| [PyPI](https://mise.jdx.dev/dev-tools/backends/pypi.html) | `mise use python@3.14 uv pypi:black` | [Awesome UVX](https://github.com/carlosferreyra/awesome-uvx) |
+| [Cargo](https://mise.jdx.dev/dev-tools/backends/cargo.html) | `mise use rust@stable cargo:eza` | [Awesome Cargo Install](https://github.com/carlosferreyra/awesome-cargo-install) |
+
+The examples include the runtime or installer prerequisites. Cargo source builds may also need a linker and native libraries; optional `cargo-binstall` can use available prebuilt binaries. Omitted package versions request `latest`; select a version when you need a fixed release. The sibling lists help you discover packages: use the package or crate name with the corresponding mise backend, and check its requirements. bunx and uvx are alternative runners, rather than mise backend names. See [all backends](https://mise.jdx.dev/dev-tools/backends/) for other installation sources.
 
 <a id="connect-your-workflow"></a>
 
@@ -62,9 +75,3 @@ Discover what is possible with [mise](https://mise.jdx.dev/): a curated collecti
 ## Contributing
 
 Suggest a resource through an [issue](https://github.com/carlosferreyra/awesome-mise/issues) or pull request. Read the [contribution guidelines](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md).
-
-## Related Lists
-
-- [Awesome UVX](https://github.com/carlosferreyra/awesome-uvx) - Python command-line tools runnable with uvx.
-- [Awesome BUNX](https://github.com/carlosferreyra/awesome-bunx) - JavaScript command-line tools runnable with bunx.
-- [Awesome Cargo Install](https://github.com/carlosferreyra/awesome-cargo-install) - Rust command-line tools installable with Cargo.
