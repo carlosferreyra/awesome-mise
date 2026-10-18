@@ -9,7 +9,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from checks import ROOT, validate
-from readme import render
+from readme import render, render_recipes
 
 
 class CatalogTests(unittest.TestCase):
@@ -28,19 +28,24 @@ class CatalogTests(unittest.TestCase):
             validate(self.data)
 
     def test_recipe_requires_config(self):
-        del self.data["categories"][1]["entries"][0]["config"]
+        recipe = next(e for c in self.data["categories"] for e in c["entries"] if e["type"] == "recipe")
+        del recipe["config"]
         with self.assertRaisesRegex(ValueError, "Recipe needs"):
             validate(self.data)
 
     def test_recipe_path_cannot_escape(self):
-        self.data["categories"][1]["entries"][0]["config"] = "../mise.toml"
+        recipe = next(e for c in self.data["categories"] for e in c["entries"] if e["type"] == "recipe")
+        recipe["config"] = "../mise.toml"
         with self.assertRaisesRegex(ValueError, "recipe path"):
             validate(self.data)
 
-    def test_readme_embeds_exact_recipe(self):
+    def test_recipe_pages_embed_exact_config_and_index_links_them(self):
         rendered = render()
-        for config in (ROOT / "examples").glob("*/mise.toml"):
-            self.assertIn("```toml\n" + config.read_text().rstrip() + "\n```", rendered)
+        self.assertNotIn("```", rendered)
+        for path, page in render_recipes().items():
+            config = path.with_name("mise.toml")
+            self.assertIn("```toml\n" + config.read_text().rstrip() + "\n```", page)
+            self.assertIn(str(path.relative_to(ROOT)), rendered)
 
     def test_freshness_check_rejects_stale_output(self):
         import shutil

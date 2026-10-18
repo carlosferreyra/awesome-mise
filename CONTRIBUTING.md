@@ -18,10 +18,10 @@ sources over a registry mirror or a collection of introductory documentation lin
 - Real-world configurations: use `learning` for linked case studies. Point to specific files and
   patterns; explain project dependencies and side effects. Using mise alone does not merit inclusion.
 - Guides: select for depth, clarity, or a particularly useful application. Basic official setup
-  links belong in Start here rather than as standalone catalog entries.
+  links belong in Official Resources rather than as standalone catalog entries.
 
-Organize entries by their main use: tools worth discovering, project environments, tasks and
-automation, integrations, real-world configurations, or guides and learning. Machine setup and
+Organize entries under integrations, tools, workflows and recipes, real-world configurations,
+or articles and tutorials. Project environment patterns belong with workflows and recipes. Machine setup and
 dotfiles are also in scope; introduce that category when a worthwhile verified entry is ready.
 Publish categories with useful entries, and avoid quotas or empty placeholders. Resource type
 and category serve different purposes: a task workflow may feature a tool, recipe, or guide.
@@ -42,13 +42,31 @@ hyphenated `slug`, and an `entries` array. Each entry has these non-empty string
 Recipes additionally require `config` (an `examples/<slug>/mise.toml` path) and `usage`
 (the command to run from the directory containing the copied configuration). Other types do
 not use these fields. Keep complete recipe TOML in the referenced file; the generator embeds
-it in the README, so the copyable version and downloadable version stay identical.
+it in the recipe directory's generated README, so the copyable version and downloadable version stay identical.
 
 For tools, explain the registry key or backend and why the tool is useful with mise. Do not
 infer support on every platform from registry membership. For integrations, explain how they
 connect to mise rather than presenting them as installable tools. For real-world configurations,
 link the original, explain the useful pattern, and respect the source license before copying.
 Do not copy secrets, personal paths, or unexplained destructive commands.
+
+## Reader-facing layout
+
+Use compact `- [Name](URL) - Description.` entries. Descriptions should be factual, concise,
+and explain a distinctive benefit; start with a capital letter and end with a period.
+The main README is a discovery index. Keep installation instructions, sample inputs, runtime
+evidence, and longer limitations in recipe pages or upstream documentation. Do not give every
+resource a heading or repeat a type label already clear from its category.
+
+Recipe entries link to their local generated README. Their primary source, prerequisites,
+configuration, and invocation appear there. Add sample inputs and expected output to
+`examples/README.md`, and link the relevant section from the recipe's notes. For non-recipe
+entries, keep detailed source context in `notes`; the generator renders only the description
+in the main README. Ensure the description includes any limitation essential to choosing the resource.
+
+Only add a new category when it groups several worthwhile entries. Favor existing categories
+over single-entry sections. Select recipes for the value mise adds through tool versions,
+environments, task composition, or integrations; a generic script wrapper alone is insufficient.
 
 ## Evidence and verification
 
@@ -72,7 +90,7 @@ git diff --check
 ```
 
 Edit `template/README.md` for introductory prose and `catalog.json` or `examples/` for resources.
-Include the regenerated README in your PR. Preserve existing category slugs so links stay stable.
+Include the regenerated main README and recipe READMEs in your PR. Preserve existing category slugs so links stay stable.
 CI validates structure, parses recipe TOML, runs maintenance tests, and checks generated output.
 It does not execute contributed recipes, install catalog tools, verify remote link availability,
 or commit changes. Review source links and runtime evidence separately.
