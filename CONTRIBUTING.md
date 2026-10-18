@@ -79,15 +79,23 @@ global configuration or bulk-install tools to validate an addition.
 
 ## Local checks
 
-Use Python 3.11 or newer; the scripts have no third-party dependencies. From the repository root:
+Use Rust nightly for Cargo's standalone script support, matching awesome-cargo-install.
+Each executable in `scripts/` contains an embedded Cargo manifest between `---` markers,
+including its dependencies and Rust edition. `scripts/catalog.rs` is their shared module.
+Cargo resolves dependencies and caches builds outside this repository; no root Cargo project
+is required. Install nightly once with `rustup toolchain install nightly` if needed.
+From the repository root:
 
 ```sh
-python3 scripts/checks.py
-python3 -m unittest discover -s tests -v
-python3 scripts/readme.py
-python3 scripts/readme.py --check
+cargo +nightly -Zscript scripts/checks.rs
+cargo +nightly test -Zscript --manifest-path scripts/readme.rs
+cargo +nightly -Zscript scripts/readme.rs
+cargo +nightly -Zscript scripts/readme.rs -- --check
 git diff --check
 ```
+
+The Rust tests cover validation and generated-page behavior. Example recipes that use Python
+remain independent content; maintaining this catalog no longer requires Python.
 
 Edit `template/README.md` for introductory prose and `catalog.json` or `examples/` for resources.
 Include the regenerated main README and recipe READMEs in your PR. Preserve existing category slugs so links stay stable.

@@ -17,19 +17,28 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v7
+      - name: Install Rust nightly for standalone scripts
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Cache Cargo dependencies and script builds
+        uses: actions/cache@v4
         with:
-          python-version: '3.11'
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/build
+          key: cargo-${{ runner.os }}-nightly-${{ hashFiles('scripts/**/*.rs') }}
+          restore-keys: |
+            cargo-${{ runner.os }}-nightly-
       - name: Validate catalog and recipe TOML
-        run: python3 scripts/checks.py
+        run: cargo +nightly -Zscript scripts/checks.rs
       - name: Test maintenance checks
-        run: python3 -m unittest discover -s tests -v
+        run: cargo +nightly test -Zscript --manifest-path scripts/readme.rs
       - name: Check generated README
-        run: python3 scripts/readme.py --check
+        run: cargo +nightly -Zscript scripts/readme.rs -- --check
       - name: Check whitespace
         run: git diff --check
